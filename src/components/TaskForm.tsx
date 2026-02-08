@@ -24,16 +24,16 @@ export const TaskForm = () => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="w-full max-w-2xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
+      className="w-full max-w-2xl mx-auto p-6 backdrop-blur-xl bg-white/10 rounded-xl shadow-2xl border border-purple-300/20"
     >
-      <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+      <h2 className="text-xl font-semibold text-white mb-4">
         Add New Task
       </h2>
       <div className="space-y-4">
         <div>
           <label
             htmlFor="task-title"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            className="block text-sm font-medium text-purple-200/90 mb-2"
           >
             Task Title
           </label>
@@ -44,7 +44,7 @@ export const TaskForm = () => {
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Enter task title..."
             required
-            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 min-h-[44px] touch-manipulation"
+            className="w-full px-4 py-3 backdrop-blur-md bg-white/10 border border-purple-300/30 rounded-lg focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300/50 text-white placeholder-purple-200/50 min-h-[44px] touch-manipulation shadow-lg transition-all duration-200"
           />
         </div>
         <div className="flex flex-col sm:flex-row gap-4">
@@ -53,9 +53,9 @@ export const TaskForm = () => {
               type="checkbox"
               checked={urgency}
               onChange={(e) => setUrgency(e.target.checked)}
-              className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+              className="w-5 h-5 text-purple-400 border-purple-300/30 rounded focus:ring-purple-400 focus:ring-2 bg-white/10"
             />
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <span className="text-sm font-medium text-purple-200/90">
               Urgent
             </span>
           </label>
@@ -64,16 +64,16 @@ export const TaskForm = () => {
               type="checkbox"
               checked={importance}
               onChange={(e) => setImportance(e.target.checked)}
-              className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+              className="w-5 h-5 text-purple-400 border-purple-300/30 rounded focus:ring-purple-400 focus:ring-2 bg-white/10"
             />
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <span className="text-sm font-medium text-purple-200/90">
               Important
             </span>
           </label>
         </div>
         <button
           type="submit"
-          className="w-full sm:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 min-h-[44px] touch-manipulation"
+          className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-transparent min-h-[44px] touch-manipulation shadow-lg hover:shadow-xl active:scale-[0.98]"
         >
           Add Task
         </button>

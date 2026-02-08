@@ -16,7 +16,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-indigo-950 to-black py-8 px-4">
       <div className="max-w-7xl mx-auto space-y-8">
         <EisenhowerMatrix onTaskClick={handleTaskClick} />
         <TaskForm />
