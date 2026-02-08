@@ -33,17 +33,43 @@ export const MatrixQuadrant = ({
 }: MatrixQuadrantProps) => {
   const label = quadrantLabels[quadrant];
 
+  // Define quadrant-specific color schemes
+  const quadrantStyles: Record<QuadrantType, { bg: string; border: string; text: string }> = {
+    'urgent-important': {
+      bg: 'bg-red-500/20',
+      border: 'border-red-400/30',
+      text: 'text-red-200/90',
+    },
+    'important-not-urgent': {
+      bg: 'bg-amber-400/25',
+      border: 'border-amber-300/35',
+      text: 'text-amber-100/95',
+    },
+    'urgent-not-important': {
+      bg: 'bg-slate-400/15',
+      border: 'border-slate-300/25',
+      text: 'text-slate-200/80',
+    },
+    'not-important-not-urgent': {
+      bg: 'bg-gray-500/15',
+      border: 'border-gray-400/20',
+      text: 'text-gray-300/80',
+    },
+  };
+
+  const styles = quadrantStyles[quadrant];
+
   return (
-    <div className="backdrop-blur-xl bg-white/10 rounded-xl p-4 border border-purple-300/20 shadow-2xl h-full flex flex-col transition-all duration-300 hover:bg-white/15">
+    <div className={`backdrop-blur-xl ${styles.bg} rounded-xl p-4 border ${styles.border} shadow-2xl h-full flex flex-col transition-all duration-300 hover:opacity-90`}>
       <div className="mb-4">
         <h3 className="text-lg font-semibold text-white mb-1">
           {label.title}
         </h3>
-        <p className="text-sm text-purple-200/80">{label.subtitle}</p>
+        <p className={`text-sm ${styles.text}`}>{label.subtitle}</p>
       </div>
       <div className="flex-1 space-y-2 overflow-y-auto min-h-0">
         {tasks.length === 0 ? (
-          <p className="text-sm text-purple-200/60 italic text-center py-4">
+          <p className={`text-sm ${styles.text} italic text-center py-4`}>
             No tasks
           </p>
         ) : (
