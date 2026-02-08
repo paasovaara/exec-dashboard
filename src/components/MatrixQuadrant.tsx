@@ -41,9 +41,9 @@ export const MatrixQuadrant = ({
       text: 'text-red-200/90',
     },
     'important-not-urgent': {
-      bg: 'bg-amber-400/25',
-      border: 'border-amber-300/35',
-      text: 'text-amber-100/95',
+      bg: 'bg-emerald-500/20',
+      border: 'border-emerald-400/30',
+      text: 'text-emerald-200/90',
     },
     'urgent-not-important': {
       bg: 'bg-slate-400/15',
@@ -51,9 +51,9 @@ export const MatrixQuadrant = ({
       text: 'text-slate-200/80',
     },
     'not-important-not-urgent': {
-      bg: 'bg-gray-500/15',
-      border: 'border-gray-400/20',
-      text: 'text-gray-300/80',
+      bg: 'bg-gray-600/10',
+      border: 'border-gray-500/15',
+      text: 'text-gray-400/60',
     },
   };
 
