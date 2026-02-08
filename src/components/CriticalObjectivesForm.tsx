@@ -1,0 +1,365 @@
+import { useState, FormEvent } from 'react';
+import { useCriticalObjectives } from '../context/CriticalObjectivesContext';
+import { RagStatus, Priority } from '../types/critical-objectives';
+
+type EntityType = 'program' | 'initiative' | 'person';
+
+// Shared styles
+const inputClass =
+  'w-full px-4 py-3 backdrop-blur-md bg-white/10 border border-purple-300/30 rounded-lg focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300/50 text-white placeholder-purple-200/50 min-h-[44px] touch-manipulation shadow-lg transition-all duration-200';
+const labelClass = 'block text-sm font-medium text-purple-200/90 mb-1';
+const selectClass =
+  'w-full px-4 py-3 backdrop-blur-md bg-white/10 border border-purple-300/30 rounded-lg focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300/50 text-white min-h-[44px] touch-manipulation shadow-lg transition-all duration-200 appearance-none [&>option]:bg-indigo-950 [&>option]:text-white';
+
+const RagStatusSelect = ({
+  value,
+  onChange,
+}: {
+  value: RagStatus;
+  onChange: (v: RagStatus) => void;
+}) => (
+  <div>
+    <label className={labelClass}>RAG Status</label>
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value as RagStatus)}
+      className={selectClass}
+    >
+      <option value="green">🟢 Green</option>
+      <option value="amber">🟡 Amber</option>
+      <option value="red">🔴 Red</option>
+    </select>
+  </div>
+);
+
+const PrioritySelect = ({
+  value,
+  onChange,
+}: {
+  value: Priority;
+  onChange: (v: Priority) => void;
+}) => (
+  <div>
+    <label className={labelClass}>Priority</label>
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value as Priority)}
+      className={selectClass}
+    >
+      <option value="P0">P0 (Highest)</option>
+      <option value="P1">P1 (Default)</option>
+      <option value="P2">P2 (Lowest)</option>
+    </select>
+  </div>
+);
+
+// --- Program Form ---
+const ProgramForm = ({ onDone }: { onDone: () => void }) => {
+  const { addProgram, initiatives } = useCriticalObjectives();
+  const [title, setTitle] = useState('');
+  const [ragStatus, setRagStatus] = useState<RagStatus>('green');
+  const [priority, setPriority] = useState<Priority>('P1');
+  const [targetDate, setTargetDate] = useState('');
+  const [selectedInitiativeIds, setSelectedInitiativeIds] = useState<string[]>([]);
+
+  const toggleInitiative = (id: string) => {
+    setSelectedInitiativeIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+    );
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!title.trim()) return;
+    await addProgram({
+      title: title.trim(),
+      ragStatus,
+      priority,
+      targetDate: targetDate || null,
+      initiativeIds: selectedInitiativeIds,
+    });
+    setTitle('');
+    setRagStatus('green');
+    setPriority('P1');
+    setTargetDate('');
+    setSelectedInitiativeIds([]);
+    onDone();
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label className={labelClass}>Title *</label>
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Program title..."
+          required
+          className={inputClass}
+        />
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <RagStatusSelect value={ragStatus} onChange={setRagStatus} />
+        <PrioritySelect value={priority} onChange={setPriority} />
+        <div>
+          <label className={labelClass}>Target Date</label>
+          <input
+            type="date"
+            value={targetDate}
+            onChange={(e) => setTargetDate(e.target.value)}
+            className={inputClass}
+          />
+        </div>
+      </div>
+      {initiatives.length > 0 && (
+        <div>
+          <label className={labelClass}>Link Initiatives</label>
+          <div className="space-y-2 max-h-32 overflow-y-auto p-2 backdrop-blur-md bg-white/5 border border-purple-300/20 rounded-lg">
+            {initiatives.map((init) => (
+              <label
+                key={init.id}
+                className="flex items-center gap-2 cursor-pointer text-purple-200/90 hover:text-white transition-colors"
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedInitiativeIds.includes(init.id)}
+                  onChange={() => toggleInitiative(init.id)}
+                  className="rounded border-purple-300/30 bg-white/10 text-purple-500 focus:ring-purple-400/50"
+                />
+                <span className="text-sm">{init.title}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+      <button
+        type="submit"
+        className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 disabled:from-purple-500/50 disabled:to-indigo-500/50 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-transparent min-h-[44px] touch-manipulation shadow-lg hover:shadow-xl active:scale-[0.98]"
+      >
+        Add Program
+      </button>
+    </form>
+  );
+};
+
+// --- Initiative Form ---
+const InitiativeForm = ({ onDone }: { onDone: () => void }) => {
+  const { addInitiative, persons } = useCriticalObjectives();
+  const [title, setTitle] = useState('');
+  const [ragStatus, setRagStatus] = useState<RagStatus>('green');
+  const [priority, setPriority] = useState<Priority>('P1');
+  const [targetDate, setTargetDate] = useState('');
+  const [driId, setDriId] = useState('');
+  const [needsAttention, setNeedsAttention] = useState(false);
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!title.trim()) return;
+    await addInitiative({
+      title: title.trim(),
+      ragStatus,
+      priority,
+      targetDate: targetDate || null,
+      driId: driId || null,
+      needsAttention,
+    });
+    setTitle('');
+    setRagStatus('green');
+    setPriority('P1');
+    setTargetDate('');
+    setDriId('');
+    setNeedsAttention(false);
+    onDone();
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label className={labelClass}>Title *</label>
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Initiative title..."
+          required
+          className={inputClass}
+        />
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <RagStatusSelect value={ragStatus} onChange={setRagStatus} />
+        <PrioritySelect value={priority} onChange={setPriority} />
+        <div>
+          <label className={labelClass}>Target Date</label>
+          <input
+            type="date"
+            value={targetDate}
+            onChange={(e) => setTargetDate(e.target.value)}
+            className={inputClass}
+          />
+        </div>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className={labelClass}>DRI (Person)</label>
+          <select
+            value={driId}
+            onChange={(e) => setDriId(e.target.value)}
+            className={selectClass}
+          >
+            <option value="">— None —</option>
+            {persons.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.firstname} {p.lastname}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex items-end pb-1">
+          <label className="flex items-center gap-2 cursor-pointer text-purple-200/90 hover:text-white transition-colors">
+            <input
+              type="checkbox"
+              checked={needsAttention}
+              onChange={(e) => setNeedsAttention(e.target.checked)}
+              className="rounded border-purple-300/30 bg-white/10 text-purple-500 focus:ring-purple-400/50"
+            />
+            <span className="text-sm font-medium">Needs Attention</span>
+          </label>
+        </div>
+      </div>
+      <button
+        type="submit"
+        className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 disabled:from-purple-500/50 disabled:to-indigo-500/50 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-transparent min-h-[44px] touch-manipulation shadow-lg hover:shadow-xl active:scale-[0.98]"
+      >
+        Add Initiative
+      </button>
+    </form>
+  );
+};
+
+// --- Person Form ---
+const PersonForm = ({ onDone }: { onDone: () => void }) => {
+  const { addPerson } = useCriticalObjectives();
+  const [firstname, setFirstname] = useState('');
+  const [lastname, setLastname] = useState('');
+  const [title, setTitle] = useState('');
+  const [avatar, setAvatar] = useState('');
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!firstname.trim() || !lastname.trim()) return;
+    await addPerson({
+      firstname: firstname.trim(),
+      lastname: lastname.trim(),
+      title: title.trim() || null,
+      avatar: avatar.trim() || null,
+    });
+    setFirstname('');
+    setLastname('');
+    setTitle('');
+    setAvatar('');
+    onDone();
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className={labelClass}>First Name *</label>
+          <input
+            type="text"
+            value={firstname}
+            onChange={(e) => setFirstname(e.target.value)}
+            placeholder="First name..."
+            required
+            className={inputClass}
+          />
+        </div>
+        <div>
+          <label className={labelClass}>Last Name *</label>
+          <input
+            type="text"
+            value={lastname}
+            onChange={(e) => setLastname(e.target.value)}
+            placeholder="Last name..."
+            required
+            className={inputClass}
+          />
+        </div>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className={labelClass}>Title</label>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Job title..."
+            className={inputClass}
+          />
+        </div>
+        <div>
+          <label className={labelClass}>Avatar URL</label>
+          <input
+            type="text"
+            value={avatar}
+            onChange={(e) => setAvatar(e.target.value)}
+            placeholder="https://..."
+            className={inputClass}
+          />
+        </div>
+      </div>
+      <button
+        type="submit"
+        className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 disabled:from-purple-500/50 disabled:to-indigo-500/50 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-transparent min-h-[44px] touch-manipulation shadow-lg hover:shadow-xl active:scale-[0.98]"
+      >
+        Add Person
+      </button>
+    </form>
+  );
+};
+
+// --- Main Form Component ---
+export const CriticalObjectivesForm = () => {
+  const [entityType, setEntityType] = useState<EntityType>('program');
+
+  const entityTabs: { type: EntityType; label: string }[] = [
+    { type: 'program', label: 'Program' },
+    { type: 'initiative', label: 'Initiative' },
+    { type: 'person', label: 'Person' },
+  ];
+
+  const handleDone = () => {
+    // Could add a success toast here in the future
+  };
+
+  return (
+    <div className="w-full max-w-2xl mx-auto p-6 backdrop-blur-xl bg-white/10 rounded-xl shadow-2xl border border-purple-300/20">
+      <h2 className="text-xl font-semibold text-white mb-4">Create New</h2>
+
+      {/* Entity type tabs */}
+      <div className="flex gap-1 mb-6 p-1 backdrop-blur-md bg-white/5 rounded-lg border border-purple-300/15">
+        {entityTabs.map(({ type, label }) => (
+          <button
+            key={type}
+            type="button"
+            onClick={() => setEntityType(type)}
+            className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+              entityType === type
+                ? 'bg-purple-500/30 text-white border border-purple-400/50 shadow-md'
+                : 'text-purple-200/70 hover:text-white hover:bg-purple-500/10'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* Render the appropriate sub-form */}
+      {entityType === 'program' && <ProgramForm onDone={handleDone} />}
+      {entityType === 'initiative' && <InitiativeForm onDone={handleDone} />}
+      {entityType === 'person' && <PersonForm onDone={handleDone} />}
+    </div>
+  );
+};
+

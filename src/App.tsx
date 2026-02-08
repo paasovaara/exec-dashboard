@@ -1,36 +1,17 @@
-import { useState } from 'react';
-import { EisenhowerMatrix } from './components/EisenhowerMatrix';
-import { TaskForm } from './components/TaskForm';
-import { TaskDetail } from './components/TaskDetail';
-import { Task } from './types/task.ts';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { Layout } from './components/Layout';
+import { MatrixPage } from './pages/MatrixPage';
+import { CosPage } from './pages/CosPage';
 
 function App() {
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-
-  const handleTaskClick = (task: Task) => {
-    setSelectedTask(task);
-  };
-
-  const handleCloseDetail = () => {
-    setSelectedTask(null);
-  };
-
   return (
-    <div className="h-screen bg-gradient-to-br from-purple-950 via-indigo-950 to-black flex flex-col overflow-hidden">
-      <div className="flex-1 overflow-y-auto min-h-0">
-        <div className="max-w-7xl mx-auto px-4 pt-8 pb-4">
-          <EisenhowerMatrix onTaskClick={handleTaskClick} />
-        </div>
-      </div>
-      <div className="flex-shrink-0 px-4 pb-4">
-        <div className="max-w-7xl mx-auto">
-          <TaskForm />
-        </div>
-      </div>
-      {selectedTask && (
-        <TaskDetail task={selectedTask} onClose={handleCloseDetail} />
-      )}
-    </div>
+    <Routes>
+      <Route path="/" element={<Layout />}>
+        <Route index element={<Navigate to="/matrix" replace />} />
+        <Route path="matrix" element={<MatrixPage />} />
+        <Route path="cos" element={<CosPage />} />
+      </Route>
+    </Routes>
   );
 }
 
