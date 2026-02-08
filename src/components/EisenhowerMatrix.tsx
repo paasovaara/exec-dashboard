@@ -21,7 +21,7 @@ export const EisenhowerMatrix = ({ onTaskClick }: EisenhowerMatrixProps) => {
       <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-purple-200 to-indigo-200 bg-clip-text text-transparent mb-8 text-center">
         Eisenhower Matrix
       </h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 h-[600px] sm:h-[500px]">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {quadrants.map((quadrant) => (
           <MatrixQuadrant
             key={quadrant}

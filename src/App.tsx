@@ -16,14 +16,20 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-indigo-950 to-black py-8 px-4">
-      <div className="max-w-7xl mx-auto space-y-8">
-        <EisenhowerMatrix onTaskClick={handleTaskClick} />
-        <TaskForm />
-        {selectedTask && (
-          <TaskDetail task={selectedTask} onClose={handleCloseDetail} />
-        )}
+    <div className="h-screen bg-gradient-to-br from-purple-950 via-indigo-950 to-black flex flex-col overflow-hidden">
+      <div className="flex-1 overflow-y-auto min-h-0">
+        <div className="max-w-7xl mx-auto px-4 pt-8 pb-4">
+          <EisenhowerMatrix onTaskClick={handleTaskClick} />
+        </div>
       </div>
+      <div className="flex-shrink-0 px-4 pb-4">
+        <div className="max-w-7xl mx-auto">
+          <TaskForm />
+        </div>
+      </div>
+      {selectedTask && (
+        <TaskDetail task={selectedTask} onClose={handleCloseDetail} />
+      )}
     </div>
   );
 }

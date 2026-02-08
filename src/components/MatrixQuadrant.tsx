@@ -60,12 +60,11 @@ export const MatrixQuadrant = ({
   const styles = quadrantStyles[quadrant];
 
   return (
-    <div className={`backdrop-blur-xl ${styles.bg} rounded-xl p-4 border ${styles.border} shadow-2xl h-full flex flex-col transition-all duration-300 hover:opacity-90`}>
-      <div className="mb-4">
-        <h3 className="text-lg font-semibold text-white mb-1">
+    <div className={`backdrop-blur-xl ${styles.bg} rounded-xl p-4 border ${styles.border} shadow-2xl min-h-[400px] max-h-[600px] flex flex-col transition-all duration-300 hover:opacity-90`}>
+      <div className="mb-3 flex-shrink-0">
+        <h3 className="text-lg font-semibold text-white">
           {label.title}
         </h3>
-        <p className={`text-sm ${styles.text}`}>{label.subtitle}</p>
       </div>
       <div className="flex-1 space-y-2 overflow-y-auto min-h-0">
         {tasks.length === 0 ? (

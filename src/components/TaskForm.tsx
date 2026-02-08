@@ -1,23 +1,27 @@
 import { useState, FormEvent } from 'react';
 import { useTasks } from '../context/TaskContext';
+import { QuadrantSelector } from './QuadrantSelector';
+import { QuadrantType } from '../types/task.ts';
 
 export const TaskForm = () => {
   const { addTask } = useTasks();
   const [title, setTitle] = useState('');
-  const [urgency, setUrgency] = useState(false);
-  const [importance, setImportance] = useState(false);
+  const [selectedQuadrant, setSelectedQuadrant] = useState<QuadrantType | null>(null);
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (title.trim()) {
+    if (title.trim() && selectedQuadrant) {
+      // Convert quadrant to urgency and importance
+      const urgency = selectedQuadrant === 'urgent-important' || selectedQuadrant === 'urgent-not-important';
+      const importance = selectedQuadrant === 'urgent-important' || selectedQuadrant === 'important-not-urgent';
+      
       addTask({
         title: title.trim(),
         urgency,
         importance,
       });
       setTitle('');
-      setUrgency(false);
-      setImportance(false);
+      setSelectedQuadrant(null);
     }
   };
 
@@ -37,43 +41,28 @@ export const TaskForm = () => {
           >
             Task Title
           </label>
-          <input
-            id="task-title"
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Enter task title..."
-            required
-            className="w-full px-4 py-3 backdrop-blur-md bg-white/10 border border-purple-300/30 rounded-lg focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300/50 text-white placeholder-purple-200/50 min-h-[44px] touch-manipulation shadow-lg transition-all duration-200"
-          />
-        </div>
-        <div className="flex flex-col sm:flex-row gap-4">
-          <label className="flex items-center space-x-3 cursor-pointer min-h-[44px] touch-manipulation">
+          <div className="flex items-center gap-3">
             <input
-              type="checkbox"
-              checked={urgency}
-              onChange={(e) => setUrgency(e.target.checked)}
-              className="w-5 h-5 text-purple-400 border-purple-300/30 rounded focus:ring-purple-400 focus:ring-2 bg-white/10"
+              id="task-title"
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Enter task title..."
+              required
+              className="flex-1 px-4 py-3 backdrop-blur-md bg-white/10 border border-purple-300/30 rounded-lg focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300/50 text-white placeholder-purple-200/50 min-h-[44px] touch-manipulation shadow-lg transition-all duration-200"
             />
-            <span className="text-sm font-medium text-purple-200/90">
-              Urgent
-            </span>
-          </label>
-          <label className="flex items-center space-x-3 cursor-pointer min-h-[44px] touch-manipulation">
-            <input
-              type="checkbox"
-              checked={importance}
-              onChange={(e) => setImportance(e.target.checked)}
-              className="w-5 h-5 text-purple-400 border-purple-300/30 rounded focus:ring-purple-400 focus:ring-2 bg-white/10"
-            />
-            <span className="text-sm font-medium text-purple-200/90">
-              Important
-            </span>
-          </label>
+            <div className="flex-shrink-0">
+              <QuadrantSelector
+                selectedQuadrant={selectedQuadrant}
+                onSelect={setSelectedQuadrant}
+              />
+            </div>
+          </div>
         </div>
         <button
           type="submit"
-          className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-transparent min-h-[44px] touch-manipulation shadow-lg hover:shadow-xl active:scale-[0.98]"
+          disabled={!selectedQuadrant}
+          className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 disabled:from-purple-500/50 disabled:to-indigo-500/50 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-transparent min-h-[44px] touch-manipulation shadow-lg hover:shadow-xl active:scale-[0.98] disabled:active:scale-100"
         >
           Add Task
         </button>
