@@ -320,7 +320,11 @@ const PersonForm = ({ onDone }: { onDone: () => void }) => {
 };
 
 // --- Main Form Component ---
-export const CriticalObjectivesForm = () => {
+interface CriticalObjectivesFormProps {
+  onDone?: () => void;
+}
+
+export const CriticalObjectivesForm = ({ onDone }: CriticalObjectivesFormProps) => {
   const [entityType, setEntityType] = useState<EntityType>('program');
 
   const entityTabs: { type: EntityType; label: string }[] = [
@@ -330,7 +334,7 @@ export const CriticalObjectivesForm = () => {
   ];
 
   const handleDone = () => {
-    // Could add a success toast here in the future
+    onDone?.();
   };
 
   return (
