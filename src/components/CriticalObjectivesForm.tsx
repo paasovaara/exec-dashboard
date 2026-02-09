@@ -1,6 +1,7 @@
 import { useState, FormEvent } from 'react';
 import { useCriticalObjectives } from '../context/CriticalObjectivesContext';
 import { RagStatus, Priority, Program, Initiative } from '../types/critical-objectives';
+import { ConfirmDialog } from './ConfirmDialog';
 
 type EntityType = 'program' | 'initiative' | 'person';
 
@@ -55,13 +56,17 @@ const PrioritySelect = ({
   </div>
 );
 
+const deleteButtonClass =
+  'w-full sm:w-auto px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 focus:ring-offset-transparent min-h-[44px] touch-manipulation shadow-lg hover:shadow-xl active:scale-[0.98] border border-red-500/50';
+
 // --- Program Form ---
 interface ProgramFormProps {
   onDone: () => void;
   initialData?: Program;
+  onDelete?: () => void;
 }
 
-export const ProgramForm = ({ onDone, initialData }: ProgramFormProps) => {
+export const ProgramForm = ({ onDone, initialData, onDelete }: ProgramFormProps) => {
   const { addProgram, updateProgram, initiatives } = useCriticalObjectives();
   const isEdit = !!initialData;
 
@@ -72,6 +77,7 @@ export const ProgramForm = ({ onDone, initialData }: ProgramFormProps) => {
   const [selectedInitiativeIds, setSelectedInitiativeIds] = useState<string[]>(
     initialData?.initiativeIds ?? []
   );
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const toggleInitiative = (id: string) => {
     setSelectedInitiativeIds((prev) =>
@@ -155,9 +161,31 @@ export const ProgramForm = ({ onDone, initialData }: ProgramFormProps) => {
           </div>
         </div>
       )}
-      <button type="submit" className={buttonClass}>
-        {isEdit ? 'Update Program' : 'Add Program'}
-      </button>
+      <div className={`flex ${isEdit && onDelete ? 'justify-between' : 'justify-end'}`}>
+        <button type="submit" className={buttonClass}>
+          {isEdit ? 'Update Program' : 'Add Program'}
+        </button>
+        {isEdit && onDelete && (
+          <button
+            type="button"
+            onClick={() => setShowDeleteConfirm(true)}
+            className={deleteButtonClass}
+          >
+            Delete
+          </button>
+        )}
+      </div>
+
+      {showDeleteConfirm && onDelete && (
+        <ConfirmDialog
+          message="Are you sure you want to delete this program? This action cannot be undone."
+          onConfirm={() => {
+            onDelete();
+            setShowDeleteConfirm(false);
+          }}
+          onCancel={() => setShowDeleteConfirm(false)}
+        />
+      )}
     </form>
   );
 };
@@ -166,9 +194,10 @@ export const ProgramForm = ({ onDone, initialData }: ProgramFormProps) => {
 interface InitiativeFormProps {
   onDone: () => void;
   initialData?: Initiative;
+  onDelete?: () => void;
 }
 
-export const InitiativeForm = ({ onDone, initialData }: InitiativeFormProps) => {
+export const InitiativeForm = ({ onDone, initialData, onDelete }: InitiativeFormProps) => {
   const { addInitiative, updateInitiative, persons } = useCriticalObjectives();
   const isEdit = !!initialData;
 
@@ -178,6 +207,7 @@ export const InitiativeForm = ({ onDone, initialData }: InitiativeFormProps) => 
   const [targetDate, setTargetDate] = useState(initialData?.targetDate ?? '');
   const [driId, setDriId] = useState(initialData?.driId ?? '');
   const [needsAttention, setNeedsAttention] = useState(initialData?.needsAttention ?? false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -265,9 +295,31 @@ export const InitiativeForm = ({ onDone, initialData }: InitiativeFormProps) => 
           </label>
         </div>
       </div>
-      <button type="submit" className={buttonClass}>
-        {isEdit ? 'Update Initiative' : 'Add Initiative'}
-      </button>
+      <div className={`flex ${isEdit && onDelete ? 'justify-between' : 'justify-end'}`}>
+        <button type="submit" className={buttonClass}>
+          {isEdit ? 'Update Initiative' : 'Add Initiative'}
+        </button>
+        {isEdit && onDelete && (
+          <button
+            type="button"
+            onClick={() => setShowDeleteConfirm(true)}
+            className={deleteButtonClass}
+          >
+            Delete
+          </button>
+        )}
+      </div>
+
+      {showDeleteConfirm && onDelete && (
+        <ConfirmDialog
+          message="Are you sure you want to delete this initiative? It will also be unlinked from all programs. This action cannot be undone."
+          onConfirm={() => {
+            onDelete();
+            setShowDeleteConfirm(false);
+          }}
+          onCancel={() => setShowDeleteConfirm(false)}
+        />
+      )}
     </form>
   );
 };

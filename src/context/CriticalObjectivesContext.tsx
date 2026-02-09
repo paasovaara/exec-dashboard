@@ -143,6 +143,20 @@ export const CriticalObjectivesProvider = ({
     try {
       await repository.deleteInitiative(id);
       setInitiatives((prev) => prev.filter((i) => i.id !== id));
+
+      // Unlink initiative from all programs that reference it
+      setPrograms((prev) => {
+        const updated = prev.map((p) => {
+          if (p.initiativeIds.includes(id)) {
+            const newIds = p.initiativeIds.filter((iid) => iid !== id);
+            // Persist the updated program
+            repository.updateProgram(p.id, { initiativeIds: newIds });
+            return { ...p, initiativeIds: newIds };
+          }
+          return p;
+        });
+        return updated;
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete initiative');
       throw err;

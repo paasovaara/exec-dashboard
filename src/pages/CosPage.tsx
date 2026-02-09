@@ -6,7 +6,7 @@ import { useCriticalObjectives } from '../context/CriticalObjectivesContext';
 import { Program, Initiative } from '../types/critical-objectives';
 
 export const CosPage = () => {
-  const { programs, loading } = useCriticalObjectives();
+  const { programs, loading, deleteProgram, deleteInitiative } = useCriticalObjectives();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingProgram, setEditingProgram] = useState<Program | null>(null);
   const [editingInitiative, setEditingInitiative] = useState<Initiative | null>(null);
@@ -67,6 +67,10 @@ export const CosPage = () => {
             key={editingProgram.id}
             initialData={editingProgram}
             onDone={() => setEditingProgram(null)}
+            onDelete={async () => {
+              await deleteProgram(editingProgram.id);
+              setEditingProgram(null);
+            }}
           />
         </Modal>
       )}
@@ -78,6 +82,10 @@ export const CosPage = () => {
             key={editingInitiative.id}
             initialData={editingInitiative}
             onDone={() => setEditingInitiative(null)}
+            onDelete={async () => {
+              await deleteInitiative(editingInitiative.id);
+              setEditingInitiative(null);
+            }}
           />
         </Modal>
       )}
