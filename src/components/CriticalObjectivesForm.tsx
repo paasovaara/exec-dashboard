@@ -409,7 +409,7 @@ interface CriticalObjectivesFormProps {
 }
 
 export const CriticalObjectivesForm = ({ onDone }: CriticalObjectivesFormProps) => {
-  const [entityType, setEntityType] = useState<EntityType>('program');
+  const [entityType, setEntityType] = useState<EntityType>('initiative');
 
   const entityTabs: { type: EntityType; label: string }[] = [
     { type: 'program', label: 'Program' },
