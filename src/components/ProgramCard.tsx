@@ -7,13 +7,16 @@ interface ProgramCardProps {
   onEditInitiative: (initiative: Initiative) => void;
 }
 
-const ragStyles: Record<RagStatus, { bg: string; border: string; text: string; badge: string; badgeText: string }> = {
+const ragStyles: Record<RagStatus, { bg: string; border: string; text: string; badge: string; badgeText: string; initBg: string; initBorder: string; initHoverBg: string }> = {
   red: {
-    bg: 'bg-red-500/20',
-    border: 'border-red-400/30',
+    bg: 'bg-red-500/35',
+    border: 'border-red-400/40',
     text: 'text-red-200/90',
     badge: 'bg-red-500/30 border-red-400/50',
     badgeText: 'text-red-200',
+    initBg: 'bg-red-500/35',
+    initBorder: 'border-red-400/40',
+    initHoverBg: 'hover:bg-red-500/50',
   },
   amber: {
     bg: 'bg-amber-500/20',
@@ -21,6 +24,9 @@ const ragStyles: Record<RagStatus, { bg: string; border: string; text: string; b
     text: 'text-amber-200/90',
     badge: 'bg-amber-500/30 border-amber-400/50',
     badgeText: 'text-amber-200',
+    initBg: 'bg-amber-500/35',
+    initBorder: 'border-amber-400/40',
+    initHoverBg: 'hover:bg-amber-500/50',
   },
   green: {
     bg: 'bg-emerald-500/20',
@@ -28,6 +34,9 @@ const ragStyles: Record<RagStatus, { bg: string; border: string; text: string; b
     text: 'text-emerald-200/90',
     badge: 'bg-emerald-500/30 border-emerald-400/50',
     badgeText: 'text-emerald-200',
+    initBg: 'bg-emerald-500/35',
+    initBorder: 'border-emerald-400/40',
+    initHoverBg: 'hover:bg-emerald-500/50',
   },
 };
 
@@ -96,7 +105,7 @@ export const ProgramCard = ({ program, onEditProgram, onEditInitiative }: Progra
                     e.stopPropagation();
                     onEditInitiative(init);
                   }}
-                  className="px-3 py-2 rounded-lg backdrop-blur-md bg-white/10 border border-purple-300/20 transition-all duration-200 cursor-pointer hover:bg-white/20 hover:border-purple-300/40"
+                  className={`px-3 py-2 rounded-lg backdrop-blur-md ${initStyle.initBg} border ${initStyle.initBorder} transition-all duration-200 cursor-pointer ${initStyle.initHoverBg}`}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-sm text-white font-medium truncate">
