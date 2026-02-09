@@ -1,8 +1,10 @@
-import { Program, RagStatus } from '../types/critical-objectives';
+import { Program, Initiative, RagStatus } from '../types/critical-objectives';
 import { useCriticalObjectives } from '../context/CriticalObjectivesContext';
 
 interface ProgramCardProps {
   program: Program;
+  onEditProgram: (program: Program) => void;
+  onEditInitiative: (initiative: Initiative) => void;
 }
 
 const ragStyles: Record<RagStatus, { bg: string; border: string; text: string; badge: string; badgeText: string }> = {
@@ -41,14 +43,15 @@ const priorityLabel: Record<string, string> = {
   P2: 'P2 — Normal',
 };
 
-export const ProgramCard = ({ program }: ProgramCardProps) => {
+export const ProgramCard = ({ program, onEditProgram, onEditInitiative }: ProgramCardProps) => {
   const { getInitiativesByProgramId, getPersonByInitiativeId } = useCriticalObjectives();
   const styles = ragStyles[program.ragStatus];
   const initiatives = getInitiativesByProgramId(program.id);
 
   return (
     <div
-      className={`backdrop-blur-xl ${styles.bg} rounded-xl p-5 border ${styles.border} shadow-2xl flex flex-col transition-all duration-300 hover:opacity-90 h-full`}
+      onClick={() => onEditProgram(program)}
+      className={`backdrop-blur-xl ${styles.bg} rounded-xl p-5 border ${styles.border} shadow-2xl flex flex-col transition-all duration-300 hover:opacity-90 h-full cursor-pointer`}
     >
       {/* Header: Title + RAG badge */}
       <div className="flex items-start justify-between gap-3 mb-4">
@@ -89,7 +92,11 @@ export const ProgramCard = ({ program }: ProgramCardProps) => {
               return (
                 <div
                   key={init.id}
-                  className={`px-3 py-2 rounded-lg backdrop-blur-md bg-white/10 border border-purple-300/20 transition-all duration-200`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEditInitiative(init);
+                  }}
+                  className="px-3 py-2 rounded-lg backdrop-blur-md bg-white/10 border border-purple-300/20 transition-all duration-200 cursor-pointer hover:bg-white/20 hover:border-purple-300/40"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-sm text-white font-medium truncate">
@@ -125,4 +132,3 @@ export const ProgramCard = ({ program }: ProgramCardProps) => {
     </div>
   );
 };
-

@@ -1,6 +1,6 @@
 import { useState, FormEvent } from 'react';
 import { useCriticalObjectives } from '../context/CriticalObjectivesContext';
-import { RagStatus, Priority } from '../types/critical-objectives';
+import { RagStatus, Priority, Program, Initiative } from '../types/critical-objectives';
 
 type EntityType = 'program' | 'initiative' | 'person';
 
@@ -10,6 +10,8 @@ const inputClass =
 const labelClass = 'block text-sm font-medium text-purple-200/90 mb-1';
 const selectClass =
   'w-full px-4 py-3 backdrop-blur-md bg-white/10 border border-purple-300/30 rounded-lg focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300/50 text-white min-h-[44px] touch-manipulation shadow-lg transition-all duration-200 appearance-none [&>option]:bg-indigo-950 [&>option]:text-white';
+const buttonClass =
+  'w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 disabled:from-purple-500/50 disabled:to-indigo-500/50 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-transparent min-h-[44px] touch-manipulation shadow-lg hover:shadow-xl active:scale-[0.98]';
 
 const RagStatusSelect = ({
   value,
@@ -54,13 +56,22 @@ const PrioritySelect = ({
 );
 
 // --- Program Form ---
-const ProgramForm = ({ onDone }: { onDone: () => void }) => {
-  const { addProgram, initiatives } = useCriticalObjectives();
-  const [title, setTitle] = useState('');
-  const [ragStatus, setRagStatus] = useState<RagStatus>('green');
-  const [priority, setPriority] = useState<Priority>('P1');
-  const [targetDate, setTargetDate] = useState('');
-  const [selectedInitiativeIds, setSelectedInitiativeIds] = useState<string[]>([]);
+interface ProgramFormProps {
+  onDone: () => void;
+  initialData?: Program;
+}
+
+export const ProgramForm = ({ onDone, initialData }: ProgramFormProps) => {
+  const { addProgram, updateProgram, initiatives } = useCriticalObjectives();
+  const isEdit = !!initialData;
+
+  const [title, setTitle] = useState(initialData?.title ?? '');
+  const [ragStatus, setRagStatus] = useState<RagStatus>(initialData?.ragStatus ?? 'green');
+  const [priority, setPriority] = useState<Priority>(initialData?.priority ?? 'P1');
+  const [targetDate, setTargetDate] = useState(initialData?.targetDate ?? '');
+  const [selectedInitiativeIds, setSelectedInitiativeIds] = useState<string[]>(
+    initialData?.initiativeIds ?? []
+  );
 
   const toggleInitiative = (id: string) => {
     setSelectedInitiativeIds((prev) =>
@@ -71,18 +82,29 @@ const ProgramForm = ({ onDone }: { onDone: () => void }) => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-    await addProgram({
-      title: title.trim(),
-      ragStatus,
-      priority,
-      targetDate: targetDate || null,
-      initiativeIds: selectedInitiativeIds,
-    });
-    setTitle('');
-    setRagStatus('green');
-    setPriority('P1');
-    setTargetDate('');
-    setSelectedInitiativeIds([]);
+
+    if (isEdit) {
+      await updateProgram(initialData.id, {
+        title: title.trim(),
+        ragStatus,
+        priority,
+        targetDate: targetDate || null,
+        initiativeIds: selectedInitiativeIds,
+      });
+    } else {
+      await addProgram({
+        title: title.trim(),
+        ragStatus,
+        priority,
+        targetDate: targetDate || null,
+        initiativeIds: selectedInitiativeIds,
+      });
+      setTitle('');
+      setRagStatus('green');
+      setPriority('P1');
+      setTargetDate('');
+      setSelectedInitiativeIds([]);
+    }
     onDone();
   };
 
@@ -133,43 +155,59 @@ const ProgramForm = ({ onDone }: { onDone: () => void }) => {
           </div>
         </div>
       )}
-      <button
-        type="submit"
-        className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 disabled:from-purple-500/50 disabled:to-indigo-500/50 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-transparent min-h-[44px] touch-manipulation shadow-lg hover:shadow-xl active:scale-[0.98]"
-      >
-        Add Program
+      <button type="submit" className={buttonClass}>
+        {isEdit ? 'Update Program' : 'Add Program'}
       </button>
     </form>
   );
 };
 
 // --- Initiative Form ---
-const InitiativeForm = ({ onDone }: { onDone: () => void }) => {
-  const { addInitiative, persons } = useCriticalObjectives();
-  const [title, setTitle] = useState('');
-  const [ragStatus, setRagStatus] = useState<RagStatus>('green');
-  const [priority, setPriority] = useState<Priority>('P1');
-  const [targetDate, setTargetDate] = useState('');
-  const [driId, setDriId] = useState('');
-  const [needsAttention, setNeedsAttention] = useState(false);
+interface InitiativeFormProps {
+  onDone: () => void;
+  initialData?: Initiative;
+}
+
+export const InitiativeForm = ({ onDone, initialData }: InitiativeFormProps) => {
+  const { addInitiative, updateInitiative, persons } = useCriticalObjectives();
+  const isEdit = !!initialData;
+
+  const [title, setTitle] = useState(initialData?.title ?? '');
+  const [ragStatus, setRagStatus] = useState<RagStatus>(initialData?.ragStatus ?? 'green');
+  const [priority, setPriority] = useState<Priority>(initialData?.priority ?? 'P1');
+  const [targetDate, setTargetDate] = useState(initialData?.targetDate ?? '');
+  const [driId, setDriId] = useState(initialData?.driId ?? '');
+  const [needsAttention, setNeedsAttention] = useState(initialData?.needsAttention ?? false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-    await addInitiative({
-      title: title.trim(),
-      ragStatus,
-      priority,
-      targetDate: targetDate || null,
-      driId: driId || null,
-      needsAttention,
-    });
-    setTitle('');
-    setRagStatus('green');
-    setPriority('P1');
-    setTargetDate('');
-    setDriId('');
-    setNeedsAttention(false);
+
+    if (isEdit) {
+      await updateInitiative(initialData.id, {
+        title: title.trim(),
+        ragStatus,
+        priority,
+        targetDate: targetDate || null,
+        driId: driId || null,
+        needsAttention,
+      });
+    } else {
+      await addInitiative({
+        title: title.trim(),
+        ragStatus,
+        priority,
+        targetDate: targetDate || null,
+        driId: driId || null,
+        needsAttention,
+      });
+      setTitle('');
+      setRagStatus('green');
+      setPriority('P1');
+      setTargetDate('');
+      setDriId('');
+      setNeedsAttention(false);
+    }
     onDone();
   };
 
@@ -227,11 +265,8 @@ const InitiativeForm = ({ onDone }: { onDone: () => void }) => {
           </label>
         </div>
       </div>
-      <button
-        type="submit"
-        className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 disabled:from-purple-500/50 disabled:to-indigo-500/50 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-transparent min-h-[44px] touch-manipulation shadow-lg hover:shadow-xl active:scale-[0.98]"
-      >
-        Add Initiative
+      <button type="submit" className={buttonClass}>
+        {isEdit ? 'Update Initiative' : 'Add Initiative'}
       </button>
     </form>
   );
@@ -309,17 +344,14 @@ const PersonForm = ({ onDone }: { onDone: () => void }) => {
           />
         </div>
       </div>
-      <button
-        type="submit"
-        className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 disabled:from-purple-500/50 disabled:to-indigo-500/50 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-transparent min-h-[44px] touch-manipulation shadow-lg hover:shadow-xl active:scale-[0.98]"
-      >
+      <button type="submit" className={buttonClass}>
         Add Person
       </button>
     </form>
   );
 };
 
-// --- Main Form Component ---
+// --- Main Form Component (Create New) ---
 interface CriticalObjectivesFormProps {
   onDone?: () => void;
 }
@@ -338,9 +370,7 @@ export const CriticalObjectivesForm = ({ onDone }: CriticalObjectivesFormProps) 
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto p-6 backdrop-blur-xl bg-white/10 rounded-xl shadow-2xl border border-purple-300/20">
-      <h2 className="text-xl font-semibold text-white mb-4">Create New</h2>
-
+    <>
       {/* Entity type tabs */}
       <div className="flex gap-1 mb-6 p-1 backdrop-blur-md bg-white/5 rounded-lg border border-purple-300/15">
         {entityTabs.map(({ type, label }) => (
@@ -363,7 +393,6 @@ export const CriticalObjectivesForm = ({ onDone }: CriticalObjectivesFormProps) 
       {entityType === 'program' && <ProgramForm onDone={handleDone} />}
       {entityType === 'initiative' && <InitiativeForm onDone={handleDone} />}
       {entityType === 'person' && <PersonForm onDone={handleDone} />}
-    </div>
+    </>
   );
 };
-
