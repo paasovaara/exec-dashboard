@@ -1,1 +1,18 @@
 @import "tailwindcss";
+
+/* Buzz animation: shakes for 15% (~0.75s) then stays still for 85% (~4.25s) = 5s total cycle */
+@keyframes buzz {
+  0% { transform: translateX(0); }
+  2.5% { transform: translateX(-2px) rotate(-1deg); }
+  5% { transform: translateX(2px) rotate(1deg); }
+  7.5% { transform: translateX(-2px) rotate(-0.5deg); }
+  10% { transform: translateX(2px) rotate(0.5deg); }
+  12.5% { transform: translateX(-1px) rotate(-0.5deg); }
+  14% { transform: translateX(1px) rotate(0.5deg); }
+  15% { transform: translateX(0); }
+  100% { transform: translateX(0); }
+}
+
+.animate-buzz {
+  animation: buzz 5s ease-in-out infinite;
+}
