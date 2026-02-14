@@ -1,20 +1,17 @@
 import { useState } from 'react';
 import { EisenhowerMatrix } from '../components/matrix/EisenhowerMatrix';
 import { TaskForm } from '../components/matrix/TaskForm';
-import { TaskDetail } from '../components/matrix/TaskDetail';
 import { Modal } from '../components/Modal';
 import { Task } from '../types/task.ts';
+import { useTasks } from '../context/TaskContext';
 
 export const MatrixPage = () => {
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const { deleteTask } = useTasks();
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
 
   const handleTaskClick = (task: Task) => {
-    setSelectedTask(task);
-  };
-
-  const handleCloseDetail = () => {
-    setSelectedTask(null);
+    setEditingTask(task);
   };
 
   return (
@@ -32,8 +29,19 @@ export const MatrixPage = () => {
         </Modal>
       )}
 
-      {selectedTask && (
-        <TaskDetail task={selectedTask} onClose={handleCloseDetail} />
+      {/* Edit Task modal */}
+      {editingTask && (
+        <Modal title="Update Task" onClose={() => setEditingTask(null)}>
+          <TaskForm
+            key={editingTask.id}
+            initialData={editingTask}
+            onDone={() => setEditingTask(null)}
+            onDelete={async () => {
+              await deleteTask(editingTask.id);
+              setEditingTask(null);
+            }}
+          />
+        </Modal>
       )}
     </div>
   );
