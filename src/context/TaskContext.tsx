@@ -1,12 +1,15 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { Task, QuadrantType } from '../types/task.ts';
-import { saveTasks, loadTasks } from '../utils/storage';
+import { TaskRepository } from '../repositories/TaskRepository';
+import { LocalStorageTaskRepository } from '../repositories/LocalStorageTaskRepository';
 
 interface TaskContextType {
   tasks: Task[];
-  addTask: (task: Omit<Task, 'id'>) => void;
-  updateTask: (id: string, updates: Partial<Task>) => void;
-  deleteTask: (id: string) => void;
+  loading: boolean;
+  error: string | null;
+  addTask: (task: Omit<Task, 'id'>) => Promise<void>;
+  updateTask: (id: string, updates: Partial<Task>) => Promise<void>;
+  deleteTask: (id: string) => Promise<void>;
   getTasksByQuadrant: (quadrant: QuadrantType) => Task[];
 }
 
@@ -20,65 +23,95 @@ export const useTasks = () => {
   return context;
 };
 
+const defaultRepository = new LocalStorageTaskRepository();
+
 interface TaskProviderProps {
   children: ReactNode;
+  repository?: TaskRepository;
 }
 
-export const TaskProvider = ({ children }: TaskProviderProps) => {
+export const TaskProvider = ({
+  children,
+  repository = defaultRepository,
+}: TaskProviderProps) => {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Load tasks from localStorage on mount
+  // Load tasks from repository on mount
   useEffect(() => {
-    const loadedTasks = loadTasks();
-    setTasks(loadedTasks);
-  }, []);
-
-  // Save tasks to localStorage whenever tasks change
-  useEffect(() => {
-    if (tasks.length > 0 || localStorage.getItem('eisenhower-tasks')) {
-      saveTasks(tasks);
-    }
-  }, [tasks]);
-
-  const addTask = (task: Omit<Task, 'id'>) => {
-    const newTask: Task = {
-      ...task,
-      id: crypto.randomUUID(),
-    };
-    setTasks((prev) => [...prev, newTask]);
-  };
-
-  const updateTask = (id: string, updates: Partial<Task>) => {
-    setTasks((prev) =>
-      prev.map((task) => (task.id === id ? { ...task, ...updates } : task))
-    );
-  };
-
-  const deleteTask = (id: string) => {
-    setTasks((prev) => prev.filter((task) => task.id !== id));
-  };
-
-  const getTasksByQuadrant = (quadrant: QuadrantType): Task[] => {
-    return tasks.filter((task) => {
-      switch (quadrant) {
-        case 'urgent-important':
-          return task.urgency && task.importance;
-        case 'important-not-urgent':
-          return !task.urgency && task.importance;
-        case 'urgent-not-important':
-          return task.urgency && !task.importance;
-        case 'not-important-not-urgent':
-          return !task.urgency && !task.importance;
-        default:
-          return false;
+    const loadTasks = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const loadedTasks = await repository.getAllTasks();
+        setTasks(loadedTasks);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load tasks');
+        console.error('Failed to load tasks:', err);
+      } finally {
+        setLoading(false);
       }
-    });
-  };
+    };
+    loadTasks();
+  }, [repository]);
+
+  const addTask = useCallback(async (task: Omit<Task, 'id'>) => {
+    try {
+      const created = await repository.createTask(task);
+      setTasks((prev) => [...prev, created]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create task');
+      throw err;
+    }
+  }, [repository]);
+
+  const updateTask = useCallback(async (id: string, updates: Partial<Task>) => {
+    try {
+      const updated = await repository.updateTask(id, updates);
+      setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update task');
+      throw err;
+    }
+  }, [repository]);
+
+  const deleteTask = useCallback(async (id: string) => {
+    try {
+      await repository.deleteTask(id);
+      setTasks((prev) => prev.filter((t) => t.id !== id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete task');
+      throw err;
+    }
+  }, [repository]);
+
+  const getTasksByQuadrant = useCallback(
+    (quadrant: QuadrantType): Task[] => {
+      return tasks.filter((task) => {
+        switch (quadrant) {
+          case 'urgent-important':
+            return task.urgency && task.importance;
+          case 'important-not-urgent':
+            return !task.urgency && task.importance;
+          case 'urgent-not-important':
+            return task.urgency && !task.importance;
+          case 'not-important-not-urgent':
+            return !task.urgency && !task.importance;
+          default:
+            return false;
+        }
+      });
+    },
+    [tasks]
+  );
 
   return (
     <TaskContext.Provider
       value={{
         tasks,
+        loading,
+        error,
         addTask,
         updateTask,
         deleteTask,
@@ -89,4 +122,3 @@ export const TaskProvider = ({ children }: TaskProviderProps) => {
     </TaskContext.Provider>
   );
 };
-

@@ -8,14 +8,14 @@ export const TaskForm = () => {
   const [title, setTitle] = useState('');
   const [selectedQuadrant, setSelectedQuadrant] = useState<QuadrantType | null>(null);
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (title.trim() && selectedQuadrant) {
       // Convert quadrant to urgency and importance
       const urgency = selectedQuadrant === 'urgent-important' || selectedQuadrant === 'urgent-not-important';
       const importance = selectedQuadrant === 'urgent-important' || selectedQuadrant === 'important-not-urgent';
       
-      addTask({
+      await addTask({
         title: title.trim(),
         urgency,
         importance,
