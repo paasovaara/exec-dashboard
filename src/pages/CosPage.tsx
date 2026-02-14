@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { CriticalObjectivesForm, ProgramForm, InitiativeForm } from '../components/CriticalObjectivesForm';
+import { CriticalObjectivesForm, ProgramForm, InitiativeForm } from '../components/critical-objectives/CriticalObjectivesForm';
 import { Modal } from '../components/Modal';
-import { ProgramCard } from '../components/ProgramCard';
+import { ProgramCard } from '../components/critical-objectives/ProgramCard';
 import { useCriticalObjectives } from '../context/CriticalObjectivesContext';
 import { Program, Initiative } from '../types/critical-objectives';
 

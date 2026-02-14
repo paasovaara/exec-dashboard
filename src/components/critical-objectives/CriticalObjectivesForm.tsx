@@ -1,6 +1,6 @@
 import { useState, FormEvent } from 'react';
-import { useCriticalObjectives } from '../context/CriticalObjectivesContext';
-import { RagStatus, Priority, Program, Initiative } from '../types/critical-objectives';
+import { useCriticalObjectives } from '../../context/CriticalObjectivesContext';
+import { RagStatus, Priority, Program, Initiative } from '../../types/critical-objectives';
 import { ConfirmDialog } from './ConfirmDialog';
 
 type EntityType = 'program' | 'initiative' | 'person';
@@ -502,3 +502,4 @@ export const CriticalObjectivesForm = ({ onDone }: CriticalObjectivesFormProps) 
     </>
   );
 };
+

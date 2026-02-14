@@ -1,7 +1,7 @@
 import { useState, FormEvent } from 'react';
-import { useTasks } from '../context/TaskContext';
+import { useTasks } from '../../context/TaskContext';
 import { QuadrantSelector } from './QuadrantSelector';
-import { QuadrantType } from '../types/task.ts';
+import { QuadrantType } from '../../types/task.ts';
 
 interface TaskFormProps {
   onDone: () => void;
@@ -70,3 +70,4 @@ export const TaskForm = ({ onDone }: TaskFormProps) => {
     </form>
   );
 };
+

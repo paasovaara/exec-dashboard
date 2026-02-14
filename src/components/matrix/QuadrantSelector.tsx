@@ -1,4 +1,4 @@
-import { QuadrantType } from '../types/task.ts';
+import { QuadrantType } from '../../types/task.ts';
 
 interface QuadrantSelectorProps {
   selectedQuadrant: QuadrantType | null;

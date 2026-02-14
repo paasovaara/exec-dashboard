@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { EisenhowerMatrix } from '../components/EisenhowerMatrix';
-import { TaskForm } from '../components/TaskForm';
-import { TaskDetail } from '../components/TaskDetail';
+import { EisenhowerMatrix } from '../components/matrix/EisenhowerMatrix';
+import { TaskForm } from '../components/matrix/TaskForm';
+import { TaskDetail } from '../components/matrix/TaskDetail';
 import { Modal } from '../components/Modal';
 import { Task } from '../types/task.ts';
 

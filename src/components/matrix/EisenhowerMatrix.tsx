@@ -1,6 +1,6 @@
-import { Task, QuadrantType } from '../types/task.ts';
+import { Task, QuadrantType } from '../../types/task.ts';
 import { MatrixQuadrant } from './MatrixQuadrant';
-import { useTasks } from '../context/TaskContext';
+import { useTasks } from '../../context/TaskContext';
 
 interface EisenhowerMatrixProps {
   onTaskClick: (task: Task) => void;

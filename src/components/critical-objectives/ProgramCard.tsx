@@ -1,5 +1,5 @@
-import { Program, Initiative, RagStatus } from '../types/critical-objectives';
-import { useCriticalObjectives } from '../context/CriticalObjectivesContext';
+import { Program, Initiative, RagStatus } from '../../types/critical-objectives';
+import { useCriticalObjectives } from '../../context/CriticalObjectivesContext';
 
 interface ProgramCardProps {
   program: Program;
@@ -141,3 +141,4 @@ export const ProgramCard = ({ program, onEditProgram, onEditInitiative }: Progra
     </div>
   );
 };
+

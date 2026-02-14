@@ -1,4 +1,4 @@
-import { Task, QuadrantType } from '../types/task.ts';
+import { Task, QuadrantType } from '../../types/task.ts';
 import { TaskItem } from './TaskItem';
 
 interface MatrixQuadrantProps {
