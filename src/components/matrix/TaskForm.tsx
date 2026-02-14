@@ -18,6 +18,22 @@ const buttonClass =
 const deleteButtonClass =
   'w-full sm:w-auto px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 focus:ring-offset-transparent min-h-[44px] touch-manipulation shadow-lg hover:shadow-xl active:scale-[0.98] border border-red-500/50';
 
+/** Format a Date as YYYY-MM-DD for the HTML date input. */
+function formatDateForInput(date?: Date | null): string {
+  if (!date) return '';
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+/** Parse a YYYY-MM-DD string into a Date (local midnight). */
+function parseDateInput(value: string): Date | null {
+  if (!value) return null;
+  const [y, m, d] = value.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
 function taskToQuadrant(task: Task): QuadrantType {
   if (task.urgency && task.importance) return 'urgent-important';
   if (!task.urgency && task.importance) return 'important-not-urgent';
@@ -31,6 +47,7 @@ export const TaskForm = ({ onDone, initialData, onDelete }: TaskFormProps) => {
 
   const [title, setTitle] = useState(initialData?.title ?? '');
   const [details, setDetails] = useState(initialData?.details ?? '');
+  const [dueDateStr, setDueDateStr] = useState(formatDateForInput(initialData?.dueDate));
   const [selectedQuadrant, setSelectedQuadrant] = useState<QuadrantType | null>(
     initialData ? taskToQuadrant(initialData) : null
   );
@@ -48,6 +65,7 @@ export const TaskForm = ({ onDone, initialData, onDelete }: TaskFormProps) => {
           urgency,
           importance,
           details: details.trim() || undefined,
+          dueDate: parseDateInput(dueDateStr),
         });
       } else {
         await addTask({
@@ -55,9 +73,11 @@ export const TaskForm = ({ onDone, initialData, onDelete }: TaskFormProps) => {
           urgency,
           importance,
           details: details.trim() || undefined,
+          dueDate: parseDateInput(dueDateStr),
         });
         setTitle('');
         setDetails('');
+        setDueDateStr('');
         setSelectedQuadrant(null);
       }
       onDone();
@@ -85,15 +105,26 @@ export const TaskForm = ({ onDone, initialData, onDelete }: TaskFormProps) => {
           </div>
         </div>
       </div>
-      <div>
-        <label className={labelClass}>Details</label>
-        <textarea
-          value={details}
-          onChange={(e) => setDetails(e.target.value)}
-          placeholder="Optional details..."
-          rows={3}
-          className={inputClass}
-        />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className={labelClass}>Details</label>
+          <textarea
+            value={details}
+            onChange={(e) => setDetails(e.target.value)}
+            placeholder="Optional details..."
+            rows={3}
+            className={inputClass}
+          />
+        </div>
+        <div>
+          <label className={labelClass}>Due Date</label>
+          <input
+            type="date"
+            value={dueDateStr}
+            onChange={(e) => setDueDateStr(e.target.value)}
+            className={inputClass}
+          />
+        </div>
       </div>
       <div className={`flex ${isEdit && onDelete ? 'justify-between' : 'justify-end'}`}>
         <button

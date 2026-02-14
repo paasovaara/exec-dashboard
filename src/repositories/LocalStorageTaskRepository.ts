@@ -3,11 +3,31 @@ import { TaskRepository } from './TaskRepository';
 
 const STORAGE_KEY = 'eisenhower-tasks';
 
+/** Shape of a Task as stored in JSON (dates as ISO strings). */
+type SerializedTask = Omit<Task, 'dueDate'> & {
+  dueDate?: string | null;
+};
+
+function deserializeTask(raw: SerializedTask): Task {
+  return {
+    ...raw,
+    dueDate: raw.dueDate ? new Date(raw.dueDate) : raw.dueDate as null | undefined,
+  };
+}
+
+function serializeTask(task: Task): SerializedTask {
+  return {
+    ...task,
+    dueDate: task.dueDate instanceof Date ? task.dueDate.toISOString() : task.dueDate,
+  };
+}
+
 function loadFromStorage(): Task[] {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
-      return JSON.parse(stored) as Task[];
+      const raw: SerializedTask[] = JSON.parse(stored);
+      return raw.map(deserializeTask);
     }
   } catch (error) {
     console.error('Failed to load tasks from localStorage:', error);
@@ -17,7 +37,8 @@ function loadFromStorage(): Task[] {
 
 function saveToStorage(tasks: Task[]): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    const serialized = tasks.map(serializeTask);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(serialized));
   } catch (error) {
     console.error('Failed to save tasks to localStorage:', error);
   }
@@ -59,4 +80,3 @@ export class LocalStorageTaskRepository implements TaskRepository {
     saveToStorage(filtered);
   }
 }
-

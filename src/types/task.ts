@@ -7,6 +7,7 @@ export type Task = {
   urgency: Urgency;
   importance: Importance;
   details?: string;
+  dueDate?: Date | null;
   metadata?: Record<string, unknown>;
 };
 
