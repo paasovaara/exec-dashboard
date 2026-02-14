@@ -17,7 +17,7 @@ interface CriticalObjectivesContextType {
   deletePerson: (id: string) => Promise<void>;
 
   // Initiative CRUD
-  addInitiative: (initiative: Omit<Initiative, 'id'>) => Promise<void>;
+  addInitiative: (initiative: Omit<Initiative, 'id'>) => Promise<string>;
   updateInitiative: (id: string, updates: Partial<Initiative>) => Promise<void>;
   deleteInitiative: (id: string) => Promise<void>;
 
@@ -119,10 +119,11 @@ export const CriticalObjectivesProvider = ({
 
   // --- Initiative CRUD ---
 
-  const addInitiative = useCallback(async (initiative: Omit<Initiative, 'id'>) => {
+  const addInitiative = useCallback(async (initiative: Omit<Initiative, 'id'>): Promise<string> => {
     try {
       const created = await repository.createInitiative(initiative);
       setInitiatives((prev) => [...prev, created]);
+      return created.id;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create initiative');
       throw err;

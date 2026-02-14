@@ -198,7 +198,7 @@ interface InitiativeFormProps {
 }
 
 export const InitiativeForm = ({ onDone, initialData, onDelete }: InitiativeFormProps) => {
-  const { addInitiative, updateInitiative, persons } = useCriticalObjectives();
+  const { addInitiative, updateInitiative, updateProgram, persons, programs } = useCriticalObjectives();
   const isEdit = !!initialData;
 
   const [title, setTitle] = useState(initialData?.title ?? '');
@@ -208,13 +208,27 @@ export const InitiativeForm = ({ onDone, initialData, onDelete }: InitiativeForm
   const [driId, setDriId] = useState(initialData?.driId ?? '');
   const [needsAttention, setNeedsAttention] = useState(initialData?.needsAttention ?? false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [selectedProgramIds, setSelectedProgramIds] = useState<string[]>(
+    initialData
+      ? programs.filter((p) => p.initiativeIds.includes(initialData.id)).map((p) => p.id)
+      : []
+  );
+
+  const toggleProgram = (id: string) => {
+    setSelectedProgramIds((prev) =>
+      prev.includes(id) ? prev.filter((pid) => pid !== id) : [...prev, id]
+    );
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
 
+    let initiativeId: string;
+
     if (isEdit) {
-      await updateInitiative(initialData.id, {
+      initiativeId = initialData.id;
+      await updateInitiative(initiativeId, {
         title: title.trim(),
         ragStatus,
         priority,
@@ -223,7 +237,7 @@ export const InitiativeForm = ({ onDone, initialData, onDelete }: InitiativeForm
         needsAttention,
       });
     } else {
-      await addInitiative({
+      const created = await addInitiative({
         title: title.trim(),
         ragStatus,
         priority,
@@ -231,13 +245,32 @@ export const InitiativeForm = ({ onDone, initialData, onDelete }: InitiativeForm
         driId: driId || null,
         needsAttention,
       });
+      initiativeId = created;
       setTitle('');
       setRagStatus('green');
       setPriority('P1');
       setTargetDate('');
       setDriId('');
       setNeedsAttention(false);
+      setSelectedProgramIds([]);
     }
+
+    // Update program linkages
+    for (const program of programs) {
+      const isCurrentlyLinked = program.initiativeIds.includes(initiativeId);
+      const shouldBeLinked = selectedProgramIds.includes(program.id);
+
+      if (shouldBeLinked && !isCurrentlyLinked) {
+        await updateProgram(program.id, {
+          initiativeIds: [...program.initiativeIds, initiativeId],
+        });
+      } else if (!shouldBeLinked && isCurrentlyLinked) {
+        await updateProgram(program.id, {
+          initiativeIds: program.initiativeIds.filter((id) => id !== initiativeId),
+        });
+      }
+    }
+
     onDone();
   };
 
@@ -295,6 +328,27 @@ export const InitiativeForm = ({ onDone, initialData, onDelete }: InitiativeForm
           </label>
         </div>
       </div>
+      {programs.length > 0 && (
+        <div>
+          <label className={labelClass}>Link to Programs</label>
+          <div className="space-y-2 max-h-32 overflow-y-auto p-2 backdrop-blur-md bg-white/5 border border-purple-300/20 rounded-lg">
+            {programs.map((prog) => (
+              <label
+                key={prog.id}
+                className="flex items-center gap-2 cursor-pointer text-purple-200/90 hover:text-white transition-colors"
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedProgramIds.includes(prog.id)}
+                  onChange={() => toggleProgram(prog.id)}
+                  className="rounded border-purple-300/30 bg-white/10 text-purple-500 focus:ring-purple-400/50"
+                />
+                <span className="text-sm">{prog.title}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
       <div className={`flex ${isEdit && onDelete ? 'justify-between' : 'justify-end'}`}>
         <button type="submit" className={buttonClass}>
           {isEdit ? 'Update Initiative' : 'Add Initiative'}
