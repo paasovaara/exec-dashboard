@@ -94,7 +94,18 @@ export const ProgramCard = ({ program, onEditProgram, onEditInitiative }: Progra
   const { getInitiativesByProgramId, getPersonByInitiativeId } = useCriticalObjectives();
   const { tasks } = useTasks();
   const styles = ragStyles[program.ragStatus];
-  const initiatives = getInitiativesByProgramId(program.id);
+  const ragOrder: Record<RagStatus, number> = { red: 0, amber: 1, green: 2 };
+  const priorityOrder: Record<string, number> = { P0: 0, P1: 1, P2: 2 };
+  const initiatives = [...getInitiativesByProgramId(program.id)].sort((a, b) => {
+    // 1. needsAttention first
+    if (a.needsAttention !== b.needsAttention) return a.needsAttention ? -1 : 1;
+    // 2. RAG status: red > amber > green
+    if (a.ragStatus !== b.ragStatus) return ragOrder[a.ragStatus] - ragOrder[b.ragStatus];
+    // 3. Priority: P0 > P1 > P2
+    if (a.priority !== b.priority) return (priorityOrder[a.priority] ?? 9) - (priorityOrder[b.priority] ?? 9);
+    // 4. Alphabetical by title
+    return a.title.localeCompare(b.title);
+  });
 
   const tasksLinkedToProgram = tasks.filter(
     (t) => t.linkedProgramIds?.includes(program.id)
