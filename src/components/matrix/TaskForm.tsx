@@ -1,5 +1,6 @@
 import { useState, FormEvent } from 'react';
 import { useTasks } from '../../context/TaskContext';
+import { useCriticalObjectives } from '../../context/CriticalObjectivesContext';
 import { QuadrantSelector } from './QuadrantSelector';
 import { Task, QuadrantType } from '../../types/task.ts';
 import { ConfirmDialog } from '../critical-objectives/ConfirmDialog';
@@ -43,6 +44,7 @@ function taskToQuadrant(task: Task): QuadrantType {
 
 export const TaskForm = ({ onDone, initialData, onDelete }: TaskFormProps) => {
   const { addTask, updateTask } = useTasks();
+  const { initiatives, programs } = useCriticalObjectives();
   const isEdit = !!initialData;
 
   const [title, setTitle] = useState(initialData?.title ?? '');
@@ -52,6 +54,24 @@ export const TaskForm = ({ onDone, initialData, onDelete }: TaskFormProps) => {
     initialData ? taskToQuadrant(initialData) : null
   );
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [selectedInitiativeIds, setSelectedInitiativeIds] = useState<string[]>(
+    initialData?.linkedInitiativeIds ?? []
+  );
+  const [selectedProgramIds, setSelectedProgramIds] = useState<string[]>(
+    initialData?.linkedProgramIds ?? []
+  );
+
+  const toggleInitiative = (id: string) => {
+    setSelectedInitiativeIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+    );
+  };
+
+  const toggleProgram = (id: string) => {
+    setSelectedProgramIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+    );
+  };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -66,6 +86,8 @@ export const TaskForm = ({ onDone, initialData, onDelete }: TaskFormProps) => {
           importance,
           details: details.trim() || undefined,
           dueDate: parseDateInput(dueDateStr),
+          linkedInitiativeIds: selectedInitiativeIds.length > 0 ? selectedInitiativeIds : undefined,
+          linkedProgramIds: selectedProgramIds.length > 0 ? selectedProgramIds : undefined,
         });
       } else {
         await addTask({
@@ -74,11 +96,15 @@ export const TaskForm = ({ onDone, initialData, onDelete }: TaskFormProps) => {
           importance,
           details: details.trim() || undefined,
           dueDate: parseDateInput(dueDateStr),
+          linkedInitiativeIds: selectedInitiativeIds.length > 0 ? selectedInitiativeIds : undefined,
+          linkedProgramIds: selectedProgramIds.length > 0 ? selectedProgramIds : undefined,
         });
         setTitle('');
         setDetails('');
         setDueDateStr('');
         setSelectedQuadrant(null);
+        setSelectedInitiativeIds([]);
+        setSelectedProgramIds([]);
       }
       onDone();
     }
@@ -126,6 +152,51 @@ export const TaskForm = ({ onDone, initialData, onDelete }: TaskFormProps) => {
           />
         </div>
       </div>
+      {(initiatives.length > 0 || programs.length > 0) && (
+        <div>
+          <label className={labelClass}>Link to Critical Objectives</label>
+          <div className="space-y-2 max-h-40 overflow-y-auto p-2 backdrop-blur-md bg-white/5 border border-purple-300/20 rounded-lg">
+            {programs.length > 0 && (
+              <>
+                <p className="text-xs font-medium uppercase tracking-wider text-purple-300/70">Programs</p>
+                {programs.map((prog) => (
+                  <label
+                    key={prog.id}
+                    className="flex items-center gap-2 cursor-pointer text-purple-200/90 hover:text-white transition-colors"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedProgramIds.includes(prog.id)}
+                      onChange={() => toggleProgram(prog.id)}
+                      className="rounded border-purple-300/30 bg-white/10 text-purple-500 focus:ring-purple-400/50"
+                    />
+                    <span className="text-sm">{prog.title}</span>
+                  </label>
+                ))}
+              </>
+            )}
+            {initiatives.length > 0 && (
+              <>
+                <p className="text-xs font-medium uppercase tracking-wider text-purple-300/70 mt-2">Initiatives</p>
+                {initiatives.map((init) => (
+                  <label
+                    key={init.id}
+                    className="flex items-center gap-2 cursor-pointer text-purple-200/90 hover:text-white transition-colors"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedInitiativeIds.includes(init.id)}
+                      onChange={() => toggleInitiative(init.id)}
+                      className="rounded border-purple-300/30 bg-white/10 text-purple-500 focus:ring-purple-400/50"
+                    />
+                    <span className="text-sm">{init.title}</span>
+                  </label>
+                ))}
+              </>
+            )}
+          </div>
+        </div>
+      )}
       <div className={`flex ${isEdit && onDelete ? 'justify-between' : 'justify-end'}`}>
         <button
           type="submit"

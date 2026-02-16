@@ -25,11 +25,18 @@ export const TaskItem = ({ task, onClick }: TaskItemProps) => {
       <span className="text-white font-medium truncate">
         {task.title}
       </span>
-      {overdue && (
-        <span className="flex-shrink-0 text-lg" aria-label="Due or overdue">
-          ⏰
-        </span>
-      )}
+      <span className="flex-shrink-0 flex items-center gap-1 ml-auto">
+        {((task.linkedInitiativeIds?.length ?? 0) > 0 || (task.linkedProgramIds?.length ?? 0) > 0) && (
+          <span className="text-lg" aria-label="Linked to critical objectives">
+            🔗
+          </span>
+        )}
+        {overdue && (
+          <span className="text-lg" aria-label="Due or overdue">
+            ⏰
+          </span>
+        )}
+      </span>
     </button>
   );
 };

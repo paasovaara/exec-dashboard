@@ -9,6 +9,8 @@ export type Task = {
   details?: string;
   dueDate?: Date | null;
   metadata?: Record<string, unknown>;
+  linkedInitiativeIds?: string[];
+  linkedProgramIds?: string[];
 };
 
 export type QuadrantType = 
