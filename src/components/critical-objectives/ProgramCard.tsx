@@ -110,16 +110,18 @@ export const ProgramCard = ({ program, onEditProgram, onEditInitiative }: Progra
     >
       {/* Header: Title + RAG badge */}
       <div className="flex items-start justify-between gap-3 mb-4">
-        <h3 className="text-lg font-semibold text-white leading-tight flex items-center gap-1.5">
+        <h3 className="text-lg font-semibold text-white leading-tight truncate">
           {program.title}
+        </h3>
+        <span className="flex-shrink-0 flex items-center gap-2">
           {tasksLinkedToProgram.length > 0 && (
             <LinkedTaskEmojis tasks={tasksLinkedToProgram} />
           )}
-        </h3>
-        <span
-          className={`flex-shrink-0 px-2 py-0.5 rounded-full text-xs font-medium border ${styles.badge} ${styles.badgeText}`}
-        >
-          {ragEmoji[program.ragStatus]} {program.ragStatus.toUpperCase()}
+          <span
+            className={`px-2 py-0.5 rounded-full text-xs font-medium border ${styles.badge} ${styles.badgeText}`}
+          >
+            {ragEmoji[program.ragStatus]} {program.ragStatus.toUpperCase()}
+          </span>
         </span>
       </div>
 
@@ -136,14 +138,14 @@ export const ProgramCard = ({ program, onEditProgram, onEditInitiative }: Progra
       </div>
 
       {/* Initiatives list */}
-      <div className="flex-1 flex flex-col min-h-0">
+      <div className="flex-1 flex flex-col">
         <p className={`text-xs font-medium uppercase tracking-wider ${styles.text} mb-2 flex-shrink-0`}>
           Initiatives ({initiatives.length})
         </p>
         {initiatives.length === 0 ? (
           <p className={`text-sm ${styles.text} italic`}>No linked initiatives</p>
         ) : (
-          <div className="space-y-2 overflow-y-auto min-h-0">
+          <div className="space-y-2">
             {initiatives.map((init) => {
               const dri = getPersonByInitiativeId(init.id);
               const initStyle = ragStyles[init.ragStatus];
@@ -157,18 +159,20 @@ export const ProgramCard = ({ program, onEditProgram, onEditInitiative }: Progra
                   className={`px-3 py-2 rounded-lg backdrop-blur-md ${initStyle.initBg} border ${initStyle.initBorder} transition-all duration-200 cursor-pointer ${initStyle.initHoverBg}`}
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-sm text-white font-medium truncate flex items-center gap-1">
+                    <span className="text-sm text-white font-medium truncate">
                       {ragEmoji[init.ragStatus]} {init.title}
+                    </span>
+                    <span className="flex-shrink-0 flex items-center gap-1.5">
                       {(() => {
                         const linkedTasks = getTasksLinkedToInitiative(init.id);
                         return linkedTasks.length > 0 ? <LinkedTaskEmojis tasks={linkedTasks} /> : null;
                       })()}
+                      {init.needsAttention && (
+                        <span className="text-xs px-1.5 py-0.5 rounded bg-amber-500/30 border border-amber-400/50 text-amber-200">
+                          ⚠ Attn
+                        </span>
+                      )}
                     </span>
-                    {init.needsAttention && (
-                      <span className="flex-shrink-0 text-xs px-1.5 py-0.5 rounded bg-amber-500/30 border border-amber-400/50 text-amber-200">
-                        ⚠ Attn
-                      </span>
-                    )}
                   </div>
                   <div className="flex flex-wrap items-center gap-2 mt-1">
                     <span className={`text-xs ${initStyle.text}`}>
