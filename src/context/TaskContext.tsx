@@ -88,20 +88,29 @@ export const TaskProvider = ({
 
   const getTasksByQuadrant = useCallback(
     (quadrant: QuadrantType): Task[] => {
-      return tasks.filter((task) => {
-        switch (quadrant) {
-          case 'urgent-important':
-            return task.urgency && task.importance;
-          case 'important-not-urgent':
-            return !task.urgency && task.importance;
-          case 'urgent-not-important':
-            return task.urgency && !task.importance;
-          case 'not-important-not-urgent':
-            return !task.urgency && !task.importance;
-          default:
-            return false;
-        }
-      });
+      return tasks
+        .filter((task) => {
+          switch (quadrant) {
+            case 'urgent-important':
+              return task.urgency && task.importance;
+            case 'important-not-urgent':
+              return !task.urgency && task.importance;
+            case 'urgent-not-important':
+              return task.urgency && !task.importance;
+            case 'not-important-not-urgent':
+              return !task.urgency && !task.importance;
+            default:
+              return false;
+          }
+        })
+        .sort((a, b) => {
+          // 1. By due date — closer to today first, no due date last
+          const aDate = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
+          const bDate = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
+          if (aDate !== bDate) return aDate - bDate;
+          // 2. Alphabetical by title
+          return a.title.localeCompare(b.title);
+        });
     },
     [tasks]
   );
