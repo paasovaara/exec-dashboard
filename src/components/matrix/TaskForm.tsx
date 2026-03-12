@@ -9,6 +9,7 @@ interface TaskFormProps {
   onDone: () => void;
   initialData?: Task;
   onDelete?: () => void;
+  onMarkDone?: () => void;
 }
 
 const inputClass =
@@ -18,6 +19,8 @@ const buttonClass =
   'w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 disabled:from-purple-500/50 disabled:to-indigo-500/50 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-transparent min-h-[44px] touch-manipulation shadow-lg hover:shadow-xl active:scale-[0.98] disabled:active:scale-100';
 const deleteButtonClass =
   'w-full sm:w-auto px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 focus:ring-offset-transparent min-h-[44px] touch-manipulation shadow-lg hover:shadow-xl active:scale-[0.98] border border-red-500/50';
+const markDoneButtonClass =
+  'w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-transparent min-h-[44px] touch-manipulation shadow-lg hover:shadow-xl active:scale-[0.98] border border-emerald-500/50';
 
 /** Format a Date as YYYY-MM-DD for the HTML date input. */
 function formatDateForInput(date?: Date | null): string {
@@ -42,7 +45,7 @@ function taskToQuadrant(task: Task): QuadrantType {
   return 'not-important-not-urgent';
 }
 
-export const TaskForm = ({ onDone, initialData, onDelete }: TaskFormProps) => {
+export const TaskForm = ({ onDone, initialData, onDelete, onMarkDone }: TaskFormProps) => {
   const { addTask, updateTask } = useTasks();
   const { initiatives, programs } = useCriticalObjectives();
   const isEdit = !!initialData;
@@ -197,7 +200,7 @@ export const TaskForm = ({ onDone, initialData, onDelete }: TaskFormProps) => {
           </div>
         </div>
       )}
-      <div className={`flex ${isEdit && onDelete ? 'justify-between' : 'justify-end'}`}>
+      <div className={`flex flex-wrap gap-2 ${isEdit && (onDelete || onMarkDone) ? 'justify-between' : 'justify-end'}`}>
         <button
           type="submit"
           disabled={!selectedQuadrant}
@@ -205,14 +208,27 @@ export const TaskForm = ({ onDone, initialData, onDelete }: TaskFormProps) => {
         >
           {isEdit ? 'Update Task' : 'Add Task'}
         </button>
-        {isEdit && onDelete && (
-          <button
-            type="button"
-            onClick={() => setShowDeleteConfirm(true)}
-            className={deleteButtonClass}
-          >
-            Delete
-          </button>
+        {isEdit && (onMarkDone || onDelete) && (
+          <div className="flex gap-2">
+            {onMarkDone && (
+              <button
+                type="button"
+                onClick={() => onMarkDone()}
+                className={markDoneButtonClass}
+              >
+                Mark done
+              </button>
+            )}
+            {onDelete && (
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(true)}
+                className={deleteButtonClass}
+              >
+                Delete
+              </button>
+            )}
+          </div>
         )}
       </div>
 

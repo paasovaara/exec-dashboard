@@ -1,15 +1,18 @@
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react';
 import { Task, QuadrantType } from '../types/task.ts';
 import { TaskRepository } from '../repositories/TaskRepository';
 import { LocalStorageTaskRepository } from '../repositories/LocalStorageTaskRepository';
+import { ActivityRepository } from '../repositories/ActivityRepository';
 
 interface TaskContextType {
   tasks: Task[];
+  activeTasks: Task[];
   loading: boolean;
   error: string | null;
   addTask: (task: Omit<Task, 'id'>) => Promise<void>;
   updateTask: (id: string, updates: Partial<Task>) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
+  markTaskDone: (id: string) => Promise<void>;
   getTasksByQuadrant: (quadrant: QuadrantType) => Task[];
 }
 
@@ -28,15 +31,22 @@ const defaultRepository = new LocalStorageTaskRepository();
 interface TaskProviderProps {
   children: ReactNode;
   repository?: TaskRepository;
+  activityRepository?: ActivityRepository | null;
 }
 
 export const TaskProvider = ({
   children,
   repository = defaultRepository,
+  activityRepository = null,
 }: TaskProviderProps) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const activeTasks = useMemo(
+    () => tasks.filter((t) => t.status !== 'done'),
+    [tasks]
+  );
 
   // Load tasks from repository on mount
   useEffect(() => {
@@ -60,11 +70,26 @@ export const TaskProvider = ({
     try {
       const created = await repository.createTask(task);
       setTasks((prev) => [...prev, created]);
+      if (activityRepository) {
+        await activityRepository.appendEvent({
+          type: 'task_added',
+          taskId: created.id,
+          taskTitle: created.title,
+          timestamp: new Date().toISOString(),
+          metadata: {
+            urgency: created.urgency,
+            importance: created.importance,
+            dueDate: created.dueDate?.toISOString(),
+            linkedInitiativeIds: created.linkedInitiativeIds,
+            linkedProgramIds: created.linkedProgramIds,
+          },
+        });
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create task');
       throw err;
     }
-  }, [repository]);
+  }, [repository, activityRepository]);
 
   const updateTask = useCallback(async (id: string, updates: Partial<Task>) => {
     try {
@@ -78,17 +103,45 @@ export const TaskProvider = ({
 
   const deleteTask = useCallback(async (id: string) => {
     try {
+      const task = tasks.find((t) => t.id === id);
+      if (activityRepository && task) {
+        await activityRepository.appendEvent({
+          type: 'task_deleted',
+          taskId: task.id,
+          taskTitle: task.title,
+          timestamp: new Date().toISOString(),
+        });
+      }
       await repository.deleteTask(id);
       setTasks((prev) => prev.filter((t) => t.id !== id));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete task');
       throw err;
     }
-  }, [repository]);
+  }, [repository, activityRepository, tasks]);
+
+  const markTaskDone = useCallback(async (id: string) => {
+    try {
+      const task = tasks.find((t) => t.id === id);
+      const updated = await repository.updateTask(id, { status: 'done' });
+      setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
+      if (activityRepository && task) {
+        await activityRepository.appendEvent({
+          type: 'task_done',
+          taskId: task.id,
+          taskTitle: task.title,
+          timestamp: new Date().toISOString(),
+        });
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to mark task done');
+      throw err;
+    }
+  }, [repository, activityRepository, tasks]);
 
   const getTasksByQuadrant = useCallback(
     (quadrant: QuadrantType): Task[] => {
-      return tasks
+      return activeTasks
         .filter((task) => {
           switch (quadrant) {
             case 'urgent-important':
@@ -112,18 +165,20 @@ export const TaskProvider = ({
           return a.title.localeCompare(b.title);
         });
     },
-    [tasks]
+    [activeTasks]
   );
 
   return (
     <TaskContext.Provider
       value={{
         tasks,
+        activeTasks,
         loading,
         error,
         addTask,
         updateTask,
         deleteTask,
+        markTaskDone,
         getTasksByQuadrant,
       }}
     >

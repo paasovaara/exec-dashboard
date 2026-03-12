@@ -6,7 +6,7 @@ import { Task } from '../types/task.ts';
 import { useTasks } from '../context/TaskContext';
 
 export const MatrixPage = () => {
-  const { deleteTask } = useTasks();
+  const { deleteTask, markTaskDone } = useTasks();
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
 
@@ -36,6 +36,10 @@ export const MatrixPage = () => {
             key={editingTask.id}
             initialData={editingTask}
             onDone={() => setEditingTask(null)}
+            onMarkDone={async () => {
+              await markTaskDone(editingTask.id);
+              setEditingTask(null);
+            }}
             onDelete={async () => {
               await deleteTask(editingTask.id);
               setEditingTask(null);

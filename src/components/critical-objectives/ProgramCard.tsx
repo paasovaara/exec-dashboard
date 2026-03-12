@@ -92,7 +92,7 @@ const LinkedTaskEmojis = ({ tasks }: { tasks: Task[] }) => {
 
 export const ProgramCard = ({ program, onEditProgram, onEditInitiative }: ProgramCardProps) => {
   const { getInitiativesByProgramId, getPersonByInitiativeId } = useCriticalObjectives();
-  const { tasks } = useTasks();
+  const { activeTasks: tasks } = useTasks();
   const styles = ragStyles[program.ragStatus];
   const ragOrder: Record<RagStatus, number> = { red: 0, amber: 1, green: 2 };
   const priorityOrder: Record<string, number> = { P0: 0, P1: 1, P2: 2 };

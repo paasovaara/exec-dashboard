@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { MatrixPage } from './pages/MatrixPage';
 import { CosPage } from './pages/CosPage';
+import { ActivityPage } from './pages/ActivityPage';
 
 function App() {
   return (
@@ -10,6 +11,7 @@ function App() {
         <Route index element={<Navigate to="/matrix" replace />} />
         <Route path="matrix" element={<MatrixPage />} />
         <Route path="cos" element={<CosPage />} />
+        <Route path="activity" element={<ActivityPage />} />
       </Route>
     </Routes>
   );

@@ -33,6 +33,16 @@ export const Layout = () => {
             >
               CO's
             </Link>
+            <Link
+              to="/activity"
+              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                isActive('/activity')
+                  ? 'bg-purple-500/30 text-white border border-purple-400/50'
+                  : 'text-purple-200/70 hover:text-white hover:bg-purple-500/10'
+              }`}
+            >
+              Activity
+            </Link>
           </div>
         </div>
       </nav>
