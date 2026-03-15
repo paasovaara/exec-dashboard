@@ -1,7 +1,7 @@
 export type Urgency = boolean; // true = urgent, false = not urgent
 export type Importance = boolean; // true = important, false = not important
 
-export type TaskStatus = 'active' | 'done';
+export type TaskStatus = 'active' | 'done' | 'deleted';
 
 export type Task = {
   id: string;
