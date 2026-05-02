@@ -10,11 +10,13 @@
   "scripts": {
     "dev": "npm run dev --workspace=apps/frontend",
     "build": "npm run build --workspace=apps/frontend",
+    "preview": "npm run preview --workspace=apps/frontend",
     "lint": "npm run lint --workspace=apps/frontend",
     "seed:from-dump": "tsx scripts/seed-from-localstore.ts"
   },
   "devDependencies": {
     "@supabase/supabase-js": "^2.49.4",
+    "dotenv": "^16.4.7",
     "tsx": "^4.19.4"
   }
 }

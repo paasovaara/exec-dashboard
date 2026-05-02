@@ -1,15 +1,23 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { config as loadEnv } from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
 import { LocalStoreDumpSchema } from '@exec-dashboard/shared';
+
+const envSeedPath = resolve(process.cwd(), '.env.seed');
+if (existsSync(envSeedPath)) {
+  loadEnv({ path: envSeedPath });
+}
 
 const SUPABASE_URL = process.env.SUPABASE_URL ?? 'http://127.0.0.1:54321';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? '';
 
 if (!SUPABASE_SERVICE_KEY) {
   console.error(
-    'Missing SUPABASE_SERVICE_ROLE_KEY env var.\n' +
-      'Get it from `supabase status` (service_role key) and export it:\n' +
-      '  export SUPABASE_SERVICE_ROLE_KEY="<key>"',
+    'Missing SUPABASE_SERVICE_ROLE_KEY.\n' +
+      '  Option A: create repo-root .env.seed (see .env.seed.example) — loaded automatically.\n' +
+      '  Option B: export SUPABASE_SERVICE_ROLE_KEY (and SUPABASE_URL for remote) in the shell.\n' +
+      '  Local key: `supabase status` → service_role. Remote: Dashboard → Settings → API.',
   );
   process.exit(1);
 }
