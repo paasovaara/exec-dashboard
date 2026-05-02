@@ -36,6 +36,7 @@ interface CriticalObjectivesContextType {
 
 const CriticalObjectivesContext = createContext<CriticalObjectivesContextType | undefined>(undefined);
 
+// eslint-disable-next-line react-refresh/only-export-components -- hook + provider pair
 export const useCriticalObjectives = () => {
   const context = useContext(CriticalObjectivesContext);
   if (!context) {

@@ -5,6 +5,7 @@ import './index.css'
 import App from './App'
 import { TaskProvider } from './context/TaskContext'
 import { CriticalObjectivesProvider } from './context/CriticalObjectivesContext'
+import { ActivityRepositoryProvider } from './context/ActivityRepositoryContext'
 
 import { LocalStorageTaskRepository } from './repositories/LocalStorageTaskRepository'
 import { LocalStorageActivityRepository } from './repositories/LocalStorageActivityRepository'
@@ -30,11 +31,13 @@ const criticalObjectivesRepository = useSupabase
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
-      <TaskProvider repository={taskRepository} activityRepository={activityRepository}>
-        <CriticalObjectivesProvider repository={criticalObjectivesRepository}>
-          <App />
-        </CriticalObjectivesProvider>
-      </TaskProvider>
+      <ActivityRepositoryProvider repository={activityRepository}>
+        <TaskProvider repository={taskRepository} activityRepository={activityRepository}>
+          <CriticalObjectivesProvider repository={criticalObjectivesRepository}>
+            <App />
+          </CriticalObjectivesProvider>
+        </TaskProvider>
+      </ActivityRepositoryProvider>
     </BrowserRouter>
   </StrictMode>,
 )

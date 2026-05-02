@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import type { ActivityEvent, ActivityType } from '@exec-dashboard/shared';
-import { LocalStorageActivityRepository } from '../repositories/LocalStorageActivityRepository';
-
-const activityRepo = new LocalStorageActivityRepository();
+import { useActivityRepository } from '../context/ActivityRepositoryContext';
 
 const typeLabel: Record<ActivityType, string> = {
   task_added: 'Added',
@@ -27,15 +26,34 @@ function formatTimestamp(iso: string): string {
 }
 
 export const ActivityPage = () => {
+  const activityRepo = useActivityRepository();
+  const location = useLocation();
   const [events, setEvents] = useState<ActivityEvent[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    activityRepo.getEvents().then((list) => {
-      setEvents([...list].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
-      setLoading(false);
-    });
-  }, []);
+    if (location.pathname !== '/activity') return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const list = await activityRepo.getEvents();
+        if (cancelled) return;
+        setEvents(
+          [...list].sort(
+            (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+          ),
+        );
+      } catch (err) {
+        console.error('Failed to load activity:', err);
+        if (!cancelled) setEvents([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [activityRepo, location.pathname]);
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
