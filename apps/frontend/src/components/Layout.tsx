@@ -1,5 +1,8 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useCallback } from 'react';
+import { useTasks } from '../context/TaskContext';
+import { useCriticalObjectives } from '../context/CriticalObjectivesContext';
+import { ConnectionStatusBanner } from './ConnectionStatusBanner';
 
 function exportLocalStorageData() {
   const dump = {
@@ -20,6 +23,8 @@ function exportLocalStorageData() {
 
 export const Layout = () => {
   const location = useLocation();
+  const { error: taskError } = useTasks();
+  const { error: cosError } = useCriticalObjectives();
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -31,6 +36,16 @@ export const Layout = () => {
 
   return (
     <div className="h-screen bg-gradient-to-br from-purple-950 via-indigo-950 to-black flex flex-col overflow-hidden">
+      <ConnectionStatusBanner />
+      {(taskError || cosError) && (
+        <div
+          className="flex-shrink-0 px-4 py-2 bg-red-950/90 border-b border-red-500/50 text-red-100 text-sm"
+          role="alert"
+        >
+          {taskError && <p className="font-medium">{taskError}</p>}
+          {cosError && <p className={taskError ? 'mt-1' : 'font-medium'}>{cosError}</p>}
+        </div>
+      )}
       <nav className="flex-shrink-0 backdrop-blur-xl bg-purple-900/20 border-b border-purple-400/20">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center gap-6">
@@ -64,7 +79,7 @@ export const Layout = () => {
             >
               Activity
             </Link>
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-3">
               <button
                 onClick={handleExport}
                 className="px-4 py-2 rounded-lg font-medium text-purple-200/70 hover:text-white hover:bg-purple-500/10 transition-all"
