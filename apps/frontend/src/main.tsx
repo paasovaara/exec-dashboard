@@ -33,7 +33,9 @@ const criticalObjectivesRepository = useSupabasePersistence
 
 console.info(
   '[exec-dashboard] Persistence:',
-  useSupabasePersistence ? 'Supabase' : 'browser (VITE_USE_SUPABASE was not "true" at build time)',
+  useSupabasePersistence
+    ? 'Supabase'
+    : `browser (VITE_USE_SUPABASE was empty/false at build time: ${JSON.stringify(import.meta.env.VITE_USE_SUPABASE)})`,
 )
 
 const root = document.getElementById('root')!
